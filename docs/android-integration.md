@@ -759,35 +759,35 @@ app/
 
 ```bash
 uv run main.py
-# 默认监听 http://127.0.0.1:8000
+# 默认监听 http://127.0.0.1:3000
 ```
 
 curl 自测：
 
 ```bash
 # 拉模型列表
-curl -H "Authorization: Bearer YOUR_KEY" http://127.0.0.1:8000/v1/models
+curl -H "Authorization: Bearer YOUR_KEY" http://127.0.0.1:3000/v1/models
 
 # 文生图（非流式）
-curl -X POST http://127.0.0.1:8000/v1/images/generations \
+curl -X POST http://127.0.0.1:3000/v1/images/generations \
   -H "Authorization: Bearer YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"prompt":"a cat","n":1,"size":"9:16","resolution":"1k","response_format":"url"}'
 
 # 4K 竖图。需要高级用户密钥，后端会选 Pro / Plus / Team Codex 账号池
-curl -X POST http://127.0.0.1:8000/v1/images/generations \
+curl -X POST http://127.0.0.1:3000/v1/images/generations \
   -H "Authorization: Bearer YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"prompt":"一张极简高级的产品海报","n":1,"size":"9:16","resolution":"4k","response_format":"url"}'
 
 # 文生图（流式）
-curl -N -X POST http://127.0.0.1:8000/v1/images/generations \
+curl -N -X POST http://127.0.0.1:3000/v1/images/generations \
   -H "Authorization: Bearer YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"prompt":"a cat","n":1,"response_format":"url","stream":true}'
 
 # 拉额度
-curl -H "Authorization: Bearer YOUR_KEY" http://127.0.0.1:8000/api/auth/me
+curl -H "Authorization: Bearer YOUR_KEY" http://127.0.0.1:3000/api/auth/me
 ```
 
 ---

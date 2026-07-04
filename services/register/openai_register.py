@@ -21,6 +21,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from services.account_service import account_service
+from services.config import DATA_DIR
 from services.register import mail_provider
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -37,7 +38,7 @@ config = {
     "threads": 3,
     "fixed_password": "",
 }
-register_config_file = base_dir.parents[1] / "data" / "register.json"
+register_config_file = DATA_DIR / "register.json"
 try:
     saved_config = json.loads(register_config_file.read_text(encoding="utf-8"))
     config.update({key: saved_config[key] for key in ("mail", "proxy", "total", "threads", "fixed_password") if key in saved_config})

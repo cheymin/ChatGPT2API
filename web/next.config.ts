@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
         if (process.env.NODE_ENV !== 'development') {
             return []
         }
-        const backend = process.env.NEXT_PUBLIC_DEV_BACKEND || 'http://127.0.0.1:8000'
+        const backend = process.env.NEXT_PUBLIC_DEV_BACKEND || 'http://127.0.0.1:3000'
         return [
             { source: '/api/:path*', destination: `${backend}/api/:path*` },
             { source: '/v1/:path*', destination: `${backend}/v1/:path*` },

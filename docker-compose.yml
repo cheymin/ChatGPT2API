@@ -1,12 +1,12 @@
 services:
   app:
-    image: ghcr.io/remotepinee/chatgpt2api:latest
+    image: ghcr.io/cheymin/chatgpt2api:latest
     container_name: chatgpt2api
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3000:3000"
     volumes:
-      - ./data:/app/data
+      - ./data:/data
       - ./config.json:/app/config.json
     environment:
       # 存储后端配置 (可选值: json, sqlite, postgres, git)
@@ -14,7 +14,7 @@ services:
       
       # 数据库配置 (当 STORAGE_BACKEND=sqlite/postgres 时使用)
       # - DATABASE_URL=postgresql://user:password@host:5432/dbname
-      # - DATABASE_URL=sqlite:///app/data/accounts.db
+      # - DATABASE_URL=sqlite:////data/accounts.db
       
       # Git 仓库配置 (当 STORAGE_BACKEND=git 时使用)
       # - GIT_REPO_URL=https://github.com/user/repo.git

@@ -14,8 +14,8 @@ class ImageBaseUrlApiTests(unittest.TestCase):
 
     def test_prefers_configured_base_url(self) -> None:
         request = SimpleNamespace(
-            url=SimpleNamespace(scheme="http", netloc="127.0.0.1:8000"),
-            headers={"host": "127.0.0.1:8000"},
+            url=SimpleNamespace(scheme="http", netloc="127.0.0.1:3000"),
+            headers={"host": "127.0.0.1:3000"},
         )
 
         self.assertEqual(api_support.resolve_image_base_url(request), "https://public.example.com")
@@ -23,7 +23,7 @@ class ImageBaseUrlApiTests(unittest.TestCase):
     def test_falls_back_to_request_host(self) -> None:
         self.fake_config.base_url = ""
         request = SimpleNamespace(
-            url=SimpleNamespace(scheme="http", netloc="127.0.0.1:8000"),
+            url=SimpleNamespace(scheme="http", netloc="127.0.0.1:3000"),
             headers={"host": "internal.example:9000"},
         )
 
