@@ -13,6 +13,7 @@ if (localPropertiesFile.exists()) {
 
 val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "2"
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.0.0"
+val engineVersion = localProperties.getProperty("flutter.engineVersion") ?: ""
 
 android {
     namespace = "com.cheymin.cilicili"
@@ -50,21 +51,19 @@ android {
     }
 }
 
-// 显式添加 Flutter Maven 仓库（确保 embedding artifact 可下载）
+// 显式添加 Flutter Maven 仓库
 repositories {
     maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
 }
 
-// Flutter plugin 在有插件的项目中不会直接给 app 添加 embedding 依赖。
-// 这里显式添加以确保 FlutterActivity 可被编译。
-project.afterEvaluate {
-    val engineVersion = localProperties.getProperty("flutter.engineVersion") ?: ""
+// 直接在构建脚本顶层添加 embedding 依赖（不用 afterEvaluate，确保在任务配置前生效）
+dependencies {
     if (engineVersion.isNotEmpty()) {
-        dependencies.add("releaseApi", "io.flutter:flutter_embedding_release:1.0.0-$engineVersion")
-        dependencies.add("debugApi", "io.flutter:flutter_embedding_debug:1.0.0-$engineVersion")
+        "releaseApi"("io.flutter:flutter_embedding_release:1.0.0-$engineVersion")
+        "debugApi"("io.flutter:flutter_embedding_debug:1.0.0-$engineVersion")
         println("CiliCili: Added Flutter embedding dependency with engine version: $engineVersion")
     } else {
-        println("CiliCili: WARNING - Could not determine Flutter engine version!")
+        println("CiliCili: WARNING - flutter.engineVersion not set in local.properties!")
     }
 }
 
