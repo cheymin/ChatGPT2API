@@ -15,6 +15,11 @@ if (localPropertiesFile.exists()) {
 val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "2"
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.0.0"
 
+// 读取 Flutter 引擎版本
+val flutterSdkPath = localProperties.getProperty("flutter.sdk") ?: ""
+val engineVersionFile = file("$flutterSdkPath/bin/cache/engine.stamp")
+val engineVersion = if (engineVersionFile.exists()) engineVersionFile.readText().trim() else ""
+
 android {
     namespace = "com.cheymin.cilicili"
     compileSdk = 34
@@ -52,6 +57,19 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+}
+
+// Flutter 引擎 Maven 仓库
+repositories {
+    maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+}
+
+// 显式添加 Flutter embedding 依赖（确保 FlutterActivity 可被编译）
+dependencies {
+    if (engineVersion.isNotEmpty()) {
+        "releaseImplementation"("io.flutter:flutter_embedding_release:1.0.0-$engineVersion")
+        "debugImplementation"("io.flutter:flutter_embedding_debug:1.0.0-$engineVersion")
     }
 }
 
