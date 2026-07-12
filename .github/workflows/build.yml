@@ -29,6 +29,11 @@ jobs:
           flutter-version: '3.24.0'
           channel: 'stable'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
       - name: Configure local.properties
         run: |
           FLUTTER_PATH=$(dirname $(dirname $(which flutter)))
@@ -36,11 +41,33 @@ jobs:
           echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
           cat android/local.properties
 
+      - name: Debug environment
+        run: |
+          echo "=== Gradle version ==="
+          gradle --version
+          echo "=== Flutter SDK path ==="
+          FLUTTER_PATH=$(dirname $(dirname $(which flutter)))
+          echo "$FLUTTER_PATH"
+          ls -la "$FLUTTER_PATH/packages/flutter_tools/gradle/" || echo "DIR NOT FOUND"
+          echo "=== flutter.gradle exists? ==="
+          ls -la "$FLUTTER_PATH/packages/flutter_tools/gradle/flutter.gradle" || echo "FILE NOT FOUND"
+          echo "=== settings.gradle ==="
+          cat android/settings.gradle
+          echo "=== app/build.gradle (first 5 lines) ==="
+          head -5 android/app/build.gradle
+
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Use system Gradle (bypass wrapper jar)
+        run: |
+          printf '#!/bin/sh\nexec gradle "$@"\n' > android/gradlew
+          chmod +x android/gradlew
+          echo "=== gradlew content ==="
+          cat android/gradlew
+
       - name: Build APK (split per ABI)
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --verbose
 
       - name: Rename APKs
         run: |
