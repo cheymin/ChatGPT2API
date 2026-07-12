@@ -37,9 +37,10 @@ jobs:
           echo "Flutter SDK path: $FLUTTER_PATH"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
-          # 从 flutter --version 输出中提取 engine revision
-          ENGINE_VERSION=$(flutter --version 2>/dev/null | grep "^Engine" | awk '{print $NF}')
-          echo "Engine version: $ENGINE_VERSION"
+          # 从 flutter.version.json 中读取完整 engine hash
+          VERSION_JSON="$FLUTTER_PATH/bin/cache/flutter.version.json"
+          ENGINE_VERSION=$(python3 -c "import json; print(json.load(open('$VERSION_JSON'))['engineRevision'])" 2>/dev/null || echo "")
+          echo "Engine version (full hash): $ENGINE_VERSION"
           if [ -z "$ENGINE_VERSION" ]; then
             echo "ERROR: Could not determine engine version!"
             exit 1

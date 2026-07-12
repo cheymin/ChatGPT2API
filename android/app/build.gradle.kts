@@ -50,8 +50,13 @@ android {
     }
 }
 
-// Flutter plugin 在有插件的项目中不会直接给 app 添加 embedding 依赖，
-// 而是指望插件子项目传递。这里显式添加以确保 FlutterActivity 可编译。
+// 显式添加 Flutter Maven 仓库（确保 embedding artifact 可下载）
+repositories {
+    maven { url = uri("https://storage.googleapis.com/download.flutter.io") }
+}
+
+// Flutter plugin 在有插件的项目中不会直接给 app 添加 embedding 依赖。
+// 这里显式添加以确保 FlutterActivity 可被编译。
 project.afterEvaluate {
     val engineVersion = localProperties.getProperty("flutter.engineVersion") ?: ""
     if (engineVersion.isNotEmpty()) {
