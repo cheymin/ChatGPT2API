@@ -31,9 +31,10 @@ jobs:
 
       - name: Configure local.properties
         run: |
-          FLUTTER_PATH=$(which flutter | xargs readlink -f | xargs dirname | xargs dirname)
+          FLUTTER_PATH=$(dirname $(dirname $(which flutter)))
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
+          cat android/local.properties
 
       - name: Install dependencies
         run: flutter pub get
