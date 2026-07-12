@@ -1,33 +1,66 @@
-# Python-generated files
+# ===== OS =====
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# ===== IDE/Editor =====
+.vscode/
+.idea/
+.project
+.classpath
+.settings/
+*.sublime-*
+
+# ===== Node.js/Frontend =====
+node_modules/
+.pnpm-store/
+.next/
+.nuxt/
+.vite/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# ===== Python =====
 __pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
-web_dist
-# Virtual environments
-.venv
-.idea
-data
-config.json
-edit
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+*.egg-info/
 
-docker-compose-local.yml
+# ===== Rust =====
+target/
 
-.claude/settings.local.json
-CLAUDE.md
-AGENTS.md
-*.patch
+# ===== Java/JVM =====
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
 
-# Environment variables
-.env
-.env.local
+# ===== Ruby =====
+.bundle/
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# ===== Logs/Temp =====
+*.log
+logs/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
 
-# Git cache
-git_cache/
+# ===== Test Coverage =====
+coverage/
+.nyc_output/
+htmlcov/
+.coverage
+*.lcov
+
+# ===== Internal =====
+/.work/
