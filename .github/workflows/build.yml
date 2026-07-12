@@ -31,15 +31,25 @@ jobs:
 
       - name: Configure local.properties
         run: |
-          FLUTTER_PATH=$(dirname $(dirname $(which flutter)))
+          # 获取 Flutter SDK 真实路径（解析符号链接）
+          FLUTTER_BIN=$(which flutter)
+          FLUTTER_PATH=$(readlink -f "$FLUTTER_BIN" | xargs dirname | xargs dirname)
+          echo "Flutter SDK path: $FLUTTER_PATH"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
-          # 预下载 Flutter 引擎，确保 engine.stamp 存在
-          flutter precache --android
-          # 打印 engine 版本用于调试
-          ENGINE_VERSION=$(cat "$FLUTTER_PATH/bin/cache/engine.stamp" 2>/dev/null || echo "NOT_FOUND")
+          # 初始化 Flutter（触发引擎下载，生成 engine.stamp）
+          flutter --version
+          # 查找 engine.stamp
+          ENGINE_STAMP="$FLUTTER_PATH/bin/cache/engine.stamp"
+          echo "engine.stamp path: $ENGINE_STAMP"
+          ls -la "$FLUTTER_PATH/bin/cache/" 2>/dev/null | head -20 || echo "cache dir not found"
+          ENGINE_VERSION="NOT_FOUND"
+          if [ -f "$ENGINE_STAMP" ]; then
+            ENGINE_VERSION=$(cat "$ENGINE_STAMP" | tr -d '[:space:]')
+          fi
           echo "Engine version: $ENGINE_VERSION"
           echo "flutter.engineVersion=$ENGINE_VERSION" >> android/local.properties
+          cat android/local.properties
 
       - name: Install dependencies
         run: flutter pub get
