@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../models/danmaku.dart';
 import '../models/video.dart';
+import '../services/ad_skip_detector.dart';
 import '../services/bilibili_api.dart';
 import '../utils/error_messages.dart';
 import '../utils/theme.dart';
@@ -32,6 +34,14 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
 
   int _currentQuality = 64;
 
+  // ===== 恰饭广告跳过相关 =====
+  /// 检测到的广告片段
+  List<AdSegment> _adSegments = [];
+  /// 是否正在加载弹幕以检测广告
+  bool _loadingAdSegments = false;
+  /// 是否开启自动跳过（仅在已集成真实播放器时生效）
+  bool _autoSkipAds = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +64,8 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
       });
       if (video != null && video.cid != null) {
         _loadPlayUrl();
+        // 异步加载弹幕并检测广告片段
+        _loadAdSegments(video.cid!, videoDuration: video.duration?.toDouble());
       }
       if (video != null && video.aid != null) {
         _loadComments(video.aid!);
@@ -64,6 +76,26 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
         _error = FunnyMessages.fromException(e);
         _loading = false;
       });
+    }
+  }
+
+  /// 加载弹幕并检测恰饭广告片段
+  Future<void> _loadAdSegments(int cid, {double? videoDuration}) async {
+    setState(() => _loadingAdSegments = true);
+    try {
+      final List<Danmaku> danmakuList = await _api.getDanmaku(cid);
+      if (!mounted) return;
+      final segments = AdSkipDetector.detect(
+        danmakuList,
+        videoDuration: videoDuration,
+      );
+      setState(() {
+        _adSegments = segments;
+        _loadingAdSegments = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loadingAdSegments = false);
     }
   }
 
@@ -157,6 +189,8 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildPlayer(),
+                  const SizedBox(height: 16),
+                  _buildAdSkipPanel(),
                   const SizedBox(height: 16),
                   Text(
                     _video!.title ?? '',
@@ -269,6 +303,261 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
           ].whereType<Widget>().toList(),
         ),
       ),
+    );
+  }
+
+  /// 构建恰饭广告跳过面板
+  Widget _buildAdSkipPanel() {
+    final cs = Theme.of(context).colorScheme;
+
+    if (_loadingAdSegments) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: cs.outlineVariant.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: cs.primary,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '正在分析弹幕识别恰饭片段...',
+                style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_adSegments.isEmpty) {
+      // 静默显示"未检测到广告"信息
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.shield_outlined,
+                size: 16, color: cs.onSurfaceVariant),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '未检测到恰饭片段（基于弹幕关键词密度分析）',
+                style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.primary.withOpacity(0.4), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.fast_forward, size: 18, color: cs.primary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '检测到 ${_adSegments.length} 个恰饭片段',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
+              ),
+              // 自动跳过开关
+              InkWell(
+                onTap: () {
+                  setState(() => _autoSkipAds = !_autoSkipAds);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(_autoSkipAds
+                          ? '已开启自动跳过恰饭片段'
+                          : '已关闭自动跳过恰饭片段'),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _autoSkipAds
+                        ? cs.primary.withOpacity(0.15)
+                        : cs.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _autoSkipAds ? cs.primary : cs.outlineVariant,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _autoSkipAds
+                            ? Icons.toggle_on
+                            : Icons.toggle_off_outlined,
+                        size: 18,
+                        color: _autoSkipAds ? cs.primary : cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '自动跳过',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: _autoSkipAds
+                              ? cs.primary
+                              : cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 时间轴可视化
+          _buildAdTimeline(cs),
+          const SizedBox(height: 10),
+          // 片段列表
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: _adSegments.asMap().entries.map((entry) {
+              final i = entry.key;
+              final seg = entry.value;
+              return InkWell(
+                onTap: () {
+                  // 显示该片段的详细信息
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '片段 ${i + 1}: ${AdSkipDetector.formatTime(seg.start)}'
+                        ' - ${AdSkipDetector.formatTime(seg.end)}'
+                        '（${seg.duration.toStringAsFixed(0)}秒，${seg.hitCount}条弹幕命中）',
+                      ),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    '${i + 1}. ${AdSkipDetector.formatTime(seg.start)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cs.onPrimaryContainer,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建广告时间轴可视化
+  Widget _buildAdTimeline(ColorScheme cs) {
+    final totalDuration = (_video?.duration ?? 0).toDouble();
+    if (totalDuration <= 0) {
+      return Text(
+        '视频时长未知，无法显示时间轴',
+        style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        return SizedBox(
+          width: width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 时间轴条
+              SizedBox(
+                height: 8,
+                width: width,
+                child: Stack(
+                  children: [
+                    // 背景条
+                    Container(
+                      decoration: BoxDecoration(
+                        color: cs.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                    // 广告片段标记
+                    ..._adSegments.map((seg) {
+                      final left = (seg.start / totalDuration) * width;
+                      final segWidth =
+                          (seg.duration / totalDuration) * width;
+                      return Positioned(
+                        left: left,
+                        width: segWidth.clamp(2.0, width - left),
+                        top: 0,
+                        bottom: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: cs.primary.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('00:00',
+                      style:
+                          TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
+                  Text(AdSkipDetector.formatTime(totalDuration),
+                      style:
+                          TextStyle(fontSize: 10, color: cs.onSurfaceVariant)),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

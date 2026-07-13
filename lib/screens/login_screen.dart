@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../services/bilibili_api.dart';
 import '../utils/error_messages.dart';
 import '../widgets/state_views.dart';
+import 'webview_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -172,6 +173,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Text('刷新二维码'),
                 ),
               ],
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(child: Divider(color: cs.outlineVariant)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      '其他方式',
+                      style: TextStyle(
+                        color: cs.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: cs.outlineVariant)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => WebViewLoginScreen(
+                        onLoginSuccess: widget.onLoginSuccess,
+                      ),
+                      fullscreenDialog: true,
+                    ),
+                  );
+                  if (result == true) {
+                    Navigator.of(context).pop(true);
+                  }
+                },
+                icon: const Icon(Icons.language),
+                label: const Text('网页登录'),
+              ),
             ],
           ),
         ),

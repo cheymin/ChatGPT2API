@@ -16,3 +16,11 @@
 
 # SharedPreferences
 -keep class io.flutter.plugins.sharedpreferences.** { *; }
+
+# WebView (webview_flutter)
+-keep class io.flutter.plugins.webviewflutter.** { *; }
+-dontwarn android.webkit.WebView
+-dontwarn android.webkit.WebSettings
+-dontwarn android.webkit.CookieManager
+-dontwarn android.webkit.WebViewClient
+-dontwarn android.webkit.JavascriptInterface

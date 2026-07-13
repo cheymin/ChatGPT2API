@@ -10,9 +10,9 @@ class AboutScreen extends StatelessWidget {
 
   static const String projectUrl = 'https://github.com/cheymin/CiliCili';
   static const String author = 'Cheymin';
-  static const String version = '2.0.0';
+  static const String version = '2.1.0';
   static const String appName = 'CiliCili';
-  static const String buildDate = '2026-07-12';
+  static const String buildDate = '2026-07-13';
 
   @override
   Widget build(BuildContext context) {

@@ -57,51 +57,49 @@ jobs:
       - name: Rename APKs
         run: |
           cd build/app/outputs/flutter-apk
+          # tag 形如 v2.1.0，直接用作文件名前缀（避免 CiliCili-vv2.1.0 双 v）
           for f in app-*-release.apk; do
             abi=$(echo "$f" | sed 's/app-\(.*\)-release.apk/\1/')
-            cp "$f" "CiliCili-v${{ github.ref_name }}-${abi}.apk"
+            cp "$f" "CiliCili-${{ github.ref_name }}-${abi}.apk"
           done
           ls -la *.apk
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: CiliCili-v${{ github.ref_name }}-APKs
-          path: build/app/outputs/flutter-apk/CiliCili-v${{ github.ref_name }}-*.apk
+          name: CiliCili-${{ github.ref_name }}-APKs
+          path: build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-*.apk
           retention-days: 90
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: CiliCili v${{ github.ref_name }}
+          name: CiliCili ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           body: |
-            # CiliCili v${{ github.ref_name }}
+            # CiliCili ${{ github.ref_name }}
 
-            ## 更新内容
-            - 🔐 二维码扫码登录
-            - 📺 我的页面：用户信息、历史记录、收藏夹、动态
-            - 💬 视频评论列表
-            - 👍 点赞/投币/收藏/关注
-            - 🏠 首页推荐、热门、排行榜
-            - 📂 视频分区浏览
-            - 🔍 搜索功能 + 热搜词
-            - 🎨 双风格主题（Material 3 + iOS）
-            - 😆 搞怪错误提示
+            ## 🆕 v2.1.0 更新内容
+            - 🌐 **网页登录（WebView）**：支持通过 B 站官方网页登录，自动提取 Cookie 凭据
+            - ⏭️ **恰饭片段识别**：基于弹幕关键词密度分析，自动检测视频中的恰饭/广告片段
+              - 时间轴可视化展示广告片段位置
+              - 一键开启/关闭自动跳过
+              - 片段列表点击查看详情（时长、命中弹幕数）
+            - 📺 v2.0.0 基础功能保留：扫码登录、首页推荐、热门、排行榜、分区、搜索、评论、点赞/投币/收藏/关注
 
             ## 下载安装
             | 架构 | 适用设备 | 文件 |
             |------|---------|------|
-            | arm64-v8a | 大多数现代手机/TV | `CiliCili-v${{ github.ref_name }}-arm64-v8a.apk` |
-            | armeabi-v7a | 老旧设备 | `CiliCili-v${{ github.ref_name }}-armeabi-v7a.apk` |
-            | x86_64 | 模拟器/x86设备 | `CiliCili-v${{ github.ref_name }}-x86_64.apk` |
+            | arm64-v8a | 大多数现代手机/TV | `CiliCili-${{ github.ref_name }}-arm64-v8a.apk` |
+            | armeabi-v7a | 老旧设备 | `CiliCili-${{ github.ref_name }}-armeabi-v7a.apk` |
+            | x86_64 | 模拟器/x86设备 | `CiliCili-${{ github.ref_name }}-x86_64.apk` |
 
             > 电视端推荐下载 `arm64-v8a` 版本
           files: |
-            build/app/outputs/flutter-apk/CiliCili-v${{ github.ref_name }}-arm64-v8a.apk
-            build/app/outputs/flutter-apk/CiliCili-v${{ github.ref_name }}-armeabi-v7a.apk
-            build/app/outputs/flutter-apk/CiliCili-v${{ github.ref_name }}-x86_64.apk
+            build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-arm64-v8a.apk
+            build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-armeabi-v7a.apk
+            build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-x86_64.apk
           draft: false
           prerelease: false
           make_latest: true

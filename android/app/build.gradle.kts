@@ -11,8 +11,8 @@ if (localPropertiesFile.exists()) {
     localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
-val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "2"
-val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.0.0"
+val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "3"
+val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.1.0"
 
 android {
     namespace = "com.cheymin.cilicili"
