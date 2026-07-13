@@ -28,39 +28,58 @@ class _WebViewLoginScreenState extends State<WebViewLoginScreen> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationRequestPolicy(NavigationRequestPolicy(
-        onNavigationRequest: (request) {
+      ..setNavigationDelegate(
+        NavigationDelegate(
           // 登录成功后通常会跳转到 www.bilibili.com
-          if (request.url.contains('www.bilibili.com') &&
-              !_loggedIn) {
-            _tryExtractCookies();
-          }
-          return NavigationDecision.navigate;
-        },
-      ))
+          onNavigationRequest: (request) {
+            if (request.url.contains('www.bilibili.com') && !_loggedIn) {
+              _tryExtractCookies();
+            }
+            return NavigationDecision.navigate;
+          },
+          // 页面加载完成时也尝试一次（覆盖 SPA 不触发导航的情况）
+          onPageFinished: (url) {
+            if (url.contains('bilibili.com') && !_loggedIn) {
+              _tryExtractCookies();
+            }
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(_loginUrl));
   }
 
-  /// 尝试从 WebView Cookie 中提取登录凭据
+  /// 尝试从 WebView 中通过 JS 读取 document.cookie 提取登录凭据
   Future<void> _tryExtractCookies() async {
     if (_checking || _loggedIn) return;
     setState(() => _checking = true);
 
     try {
-      final cookieManager = WebViewCookieManager();
       // 等待 Cookie 写入完成
       await Future.delayed(const Duration(milliseconds: 500));
 
-      final cookies = await cookieManager.getAllCookies();
+      // 通过 JavaScript 读取 document.cookie
+      // runJavaScriptReturningResult 返回值是 String（含引号）
+      final raw = await _controller.runJavaScriptReturningResult(
+        'document.cookie || ""',
+      );
+
+      final cookieStr = raw is String
+          ? (raw.startsWith('"') && raw.endsWith('"')
+              ? raw.substring(1, raw.length - 1)
+              : raw)
+          : raw.toString();
 
       String? sessdata;
       String? biliJct;
       String? dedeUserId;
       String? buvid3;
 
-      for (final cookie in cookies) {
-        final name = cookie.name;
-        final value = cookie.value;
+      // 解析 "k1=v1; k2=v2; ..." 格式
+      for (final pair in cookieStr.split(';')) {
+        final eq = pair.indexOf('=');
+        if (eq <= 0) continue;
+        final name = pair.substring(0, eq).trim();
+        final value = pair.substring(eq + 1).trim();
         if (name == 'SESSDATA') {
           sessdata = value;
         } else if (name == 'bili_jct') {
@@ -91,6 +110,17 @@ class _WebViewLoginScreenState extends State<WebViewLoginScreen> {
             );
             widget.onLoginSuccess?.call();
             Navigator.of(context).pop(true);
+          }
+        } else {
+          // Cookie 提取到了但 API 验证失败，提示用户重试
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('已提取 Cookie，但验证登录状态失败，请重试'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            _loggedIn = false;
           }
         }
       }
