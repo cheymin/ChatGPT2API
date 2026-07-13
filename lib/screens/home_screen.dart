@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'about_screen.dart';
+import 'bangumi_screen.dart';
 import 'category_screen.dart';
 import 'home_feed_screen.dart';
+import 'live_screen.dart';
 import 'mine_screen.dart';
 import 'search_screen.dart';
 import '../utils/theme.dart';
@@ -22,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _pages = const <Widget>[
     HomeFeedScreen(),
     CategoryScreen(),
+    LiveScreen(),
+    BangumiScreen(),
     SearchScreen(),
     MineScreen(),
     AboutScreen(),
@@ -30,6 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _navItems = const [
     (icon: Icons.home_outlined, activeIcon: Icons.home, label: '首页'),
     (icon: Icons.category_outlined, activeIcon: Icons.category, label: '分区'),
+    (icon: Icons.live_tv_outlined, activeIcon: Icons.live_tv, label: '直播'),
+    (icon: Icons.movie_outlined, activeIcon: Icons.movie, label: '追剧'),
     (icon: Icons.search, activeIcon: Icons.search, label: '搜索'),
     (icon: Icons.person_outline, activeIcon: Icons.person, label: '我的'),
     (icon: Icons.info_outline, activeIcon: Icons.info, label: '关于'),
@@ -122,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.all(12),
             child: Text(
-              'v2.0.0',
+              'v3.0.0',
               style: TextStyle(
                 fontSize: 11,
                 color: cs.onSurfaceVariant.withOpacity(0.5),

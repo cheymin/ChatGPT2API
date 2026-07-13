@@ -11,8 +11,8 @@ if (localPropertiesFile.exists()) {
     localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
 
-val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "4"
-val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "2.1.1"
+val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "5"
+val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "3.0.0"
 
 // ===== 签名配置：从 keystore.properties 读取，找不到则用默认值 =====
 val keystoreProperties = Properties().apply {

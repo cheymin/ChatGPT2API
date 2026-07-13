@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build-android:
-    name: Build & Publish
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,13 +31,11 @@ jobs:
 
       - name: Configure local.properties
         run: |
-          # 获取 Flutter SDK 真实路径（解析符号链接）
           FLUTTER_BIN=$(which flutter)
           FLUTTER_PATH=$(readlink -f "$FLUTTER_BIN" | xargs dirname | xargs dirname)
           echo "Flutter SDK path: $FLUTTER_PATH"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
           echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
-          # 从 flutter.version.json 中读取完整 engine hash
           VERSION_JSON="$FLUTTER_PATH/bin/cache/flutter.version.json"
           ENGINE_VERSION=$(python3 -c "import json; print(json.load(open('$VERSION_JSON'))['engineRevision'])" 2>/dev/null || echo "")
           echo "Engine version (full hash): $ENGINE_VERSION"
@@ -57,7 +55,6 @@ jobs:
       - name: Rename APKs
         run: |
           cd build/app/outputs/flutter-apk
-          # tag 形如 v2.1.0，直接用作文件名前缀（避免 CiliCili-vv2.1.0 双 v）
           for f in app-*-release.apk; do
             abi=$(echo "$f" | sed 's/app-\(.*\)-release.apk/\1/')
             cp "$f" "CiliCili-${{ github.ref_name }}-${abi}.apk"
@@ -80,13 +77,49 @@ jobs:
           body: |
             # CiliCili ${{ github.ref_name }}
 
-            ## 🆕 v2.1.1 更新内容
-            - 🔑 **修复 APK 签名问题**：release 包现已用正式 keystore 签名，可正常安装（v2.1.0 因未签名导致电视端"解析包时出现问题"）
-            - 🎨 **全新应用图标**：B 站粉主题色 + 复古小电视+播放按钮设计
-            - 🌐 网页登录（WebView）：通过 B 站官方网页登录，自动提取 Cookie 凭据
-            - ⏭️ 恰饭片段识别：基于弹幕关键词密度分析，自动检测视频中的恰饭/广告片段
-              - 时间轴可视化、片段列表、自动跳过开关
-            - 📺 v2.0.0 基础功能：扫码登录、首页推荐、热门、排行榜、分区、搜索、评论、点赞/投币/收藏/关注
+            ## 🆕 v3.0.0 重大更新 - 对齐 PiliPlus 架构
+
+            ### 🎬 真实视频播放器
+            - 集成 media_kit (libmpv)，**App 内直接播放 B 站视频**
+            - DASH 视频流+音频流分离播放（对齐 PiliPlus 方案）
+            - 自适应 B 站 Referer/UA
+            - 替代了 v2.x 的"跳浏览器"占位方案
+
+            ### 🎨 弹幕引擎
+            - 集成 canvas_danmaku，对齐 PiliPlus 弹幕渲染
+            - 支持滚动/顶部/底部三种弹幕模式
+            - 会员彩色弹幕
+            - 弹幕大小/不透明度/显示区域/速度可调
+
+            ### 🌐 网络层重写
+            - 从 http 包迁移到 **Dio**（对齐 PiliPlus）
+            - **WBI 签名**（w_rid + wts）实现，解锁更高画质接口
+            - 多 appKey/appSec 策略（Android HD + TV secret）
+            - 多 UA 自适应（移动端 + HD 端）
+            - 按 Day 缓存 mixinKey
+
+            ### 👥 多账号管理
+            - 新增多账号体系（对齐 PiliPlus AccountManager）
+            - 多账号切换/添加/删除
+            - 每个账号独立 cookie/buvid
+
+            ### 📺 新增直播模块
+            - 直播间列表（首页热门直播）
+            - 在线人数、分区、LIVE 状态显示
+            - 直播流地址获取（后续接入播放器）
+
+            ### 🎬 新增番剧/影视模块
+            - 番剧/国创/纪录片/电影/电视剧 5 个 Tab
+            - 番剧封面、评分、地区、风格展示
+
+            ### 🖥️ 多平台 scaffold
+            - 新增 `setup_platforms.sh` 脚本
+            - 用户本地运行即可生成 Windows/macOS/Linux/iOS 工程目录
+            - `./setup_platforms.sh`
+
+            ### 📦 依赖升级
+            - 新增：media_kit, canvas_danmaku, dio, crypto, window_manager, tray_manager 等
+            - 升级：cached_network_image, webview_flutter, shared_preferences 等
 
             ## 下载安装
             | 架构 | 适用设备 | 文件 |
@@ -96,6 +129,8 @@ jobs:
             | x86_64 | 模拟器/x86设备 | `CiliCili-${{ github.ref_name }}-x86_64.apk` |
 
             > 电视端推荐下载 `arm64-v8a` 版本
+            >
+            > 桌面端（Win/Mac/Linux）需 clone 仓库后运行 `./setup_platforms.sh` 生成平台目录，再 `flutter build <platform>`
           files: |
             build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-arm64-v8a.apk
             build/app/outputs/flutter-apk/CiliCili-${{ github.ref_name }}-armeabi-v7a.apk

@@ -8,6 +8,7 @@ import '../services/ad_skip_detector.dart';
 import '../services/bilibili_api.dart';
 import '../utils/error_messages.dart';
 import '../utils/theme.dart';
+import '../widgets/player_widget.dart';
 import '../widgets/state_views.dart';
 import '../widgets/video_card.dart';
 
@@ -252,6 +253,28 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
 
   Widget _buildPlayer() {
     final cs = Theme.of(context).colorScheme;
+
+    // 如果已获取到播放地址，使用真实播放器
+    if (_playUrl != null &&
+        _playUrl!.dashVideo.isNotEmpty &&
+        _playUrl!.dashAudio.isNotEmpty) {
+      final video = _playUrl!.dashVideo.first;
+      final audio = _playUrl!.dashAudio.first;
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: PlayerWidget(
+            videoUrl: video.baseUrl,
+            audioUrl: audio.baseUrl,
+            coverUrl: _video!.coverUrl,
+            durationMs: _playUrl!.duration,
+          ),
+        ),
+      );
+    }
+
+    // 兜底：占位符 + 浏览器跳转按钮
     return AspectRatio(
       aspectRatio: 16 / 9,
       child: Container(
@@ -289,7 +312,7 @@ class _VideoDetailScreenState extends State<VideoDetailScreen> {
                     Icon(Icons.play_circle_outline,
                         size: 64, color: Colors.white.withOpacity(0.9)),
                     const SizedBox(height: 12),
-                    const Text('视频播放需要在浏览器中打开',
+                    const Text('播放地址获取失败，可在浏览器中打开',
                         style: TextStyle(color: Colors.white70, fontSize: 14)),
                     const SizedBox(height: 12),
                     FilledButton.icon(
