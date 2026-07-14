@@ -27,6 +27,7 @@ class Bangumi {
   });
 
   factory Bangumi.fromJson(Map<String, dynamic> json) {
+    final publish = json['publish'] is Map ? json['publish'] as Map : null;
     return Bangumi(
       seasonId: json['season_id'] as int? ?? 0,
       title: (json['title'] as String?) ?? '',
@@ -43,7 +44,7 @@ class Bangumi {
       styles: (json['styles'] as List?)
           ?.map((e) => e is Map ? e['name'] as String? : '')
           .join(' / '),
-      pubDate: _parseInt(json['publish']['pub_time'])? is int ? (json['publish']?['pub_time'] as int?) : null,
+      pubDate: publish != null ? _parseInt(publish['pub_time']) : null,
       mediaType: _parseInt(json['type']) ?? 1,
     );
   }

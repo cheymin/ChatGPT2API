@@ -126,16 +126,13 @@ class BiliDio {
         BiliApi.navWbi,
         options: Options(headers: _authHeaders()),
       );
-      final data = resp.data;
-      if (data is Map &&
-          data['code'] == -101 &&
-          data['data']?['wbi_img'] != null) {
-        // 即使未登录，wbi_img 也会返回
-      }
-      final wbiImg = data is Map ? data['data']?['wbi_img'] : null;
-      final imgUrl = wbiImg?['img_url'] as String? ?? '';
-      final subUrl = wbiImg?['sub_url'] as String? ?? '';
-      if (imgUrl.isNotEmpty && subUrl.isNotEmpty) {
+      final data = resp.data is Map<String, dynamic>
+          ? resp.data as Map<String, dynamic>
+          : <String, dynamic>{};
+      final wbiImg = data['data'] is Map ? data['data']['wbi_img'] : null;
+      final imgUrl = wbiImg is Map ? wbiImg['img_url'] as String? : '';
+      final subUrl = wbiImg is Map ? wbiImg['sub_url'] as String? : '';
+      if (imgUrl != null && imgUrl.isNotEmpty && subUrl != null && subUrl.isNotEmpty) {
         _mixinKey = WbiSign.getMixinKey(imgUrl: imgUrl, subUrl: subUrl);
         return _mixinKey!;
       }

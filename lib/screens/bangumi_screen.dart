@@ -109,7 +109,7 @@ class _BangumiScreenState extends State<BangumiScreen>
               controller: _tabController,
               children: List.generate(_tabs.length, (i) {
                 if (_loading[i] == true) {
-                  return const LoadingView(message: '加载中...');
+                  return const LoadingView(text: '加载中...');
                 }
                 if (_errors[i] != null) {
                   return ErrorView(
@@ -122,7 +122,7 @@ class _BangumiScreenState extends State<BangumiScreen>
                   );
                 }
                 final list = _cache[i] ?? const [];
-                if (list.isEmpty) return const EmptyView(message: '暂无内容');
+                if (list.isEmpty) return const EmptyView(text: '暂无内容');
                 return GridView.builder(
                   padding: const EdgeInsets.all(12),
                   gridDelegate:

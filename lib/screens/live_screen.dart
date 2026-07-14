@@ -106,7 +106,7 @@ class _LiveScreenState extends State<LiveScreen> {
           await _loadData();
         },
         child: _rooms.isEmpty && _loading
-            ? const LoadingView(message: '正在加载直播列表...')
+            ? const LoadingView(text: '正在加载直播列表...')
             : _rooms.isEmpty && _error != null
                 ? ErrorView(
                     message: _error!,
