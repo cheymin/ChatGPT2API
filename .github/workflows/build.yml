@@ -77,6 +77,24 @@ jobs:
           body: |
             # CiliCili ${{ github.ref_name }}
 
+            ## 🔥 v3.0.1 紧急修复 - 解决启动闪退
+
+            ### 修复的闪退原因
+            1. **缺失 http 包**：v3.0.0 移除了 http 依赖，但旧 API 服务仍引用，导致编译/启动失败
+            2. **强制横屏**：部分电视/平板方向传感器异常会直接崩溃，改为允许旋转
+            3. **media_kit 初始化失败无兜底**：libmpv 在某些设备初始化失败会直接退出
+            4. **BiliDio 初始化失败无兜底**：网络异常会退出
+            5. **SharedPreferences 初始化失败无兜底**
+            6. **无全局错误处理**：任何未捕获异常直接闪退
+
+            ### 防御性改造
+            - 全局 `FlutterError.onError` + `PlatformDispatcher.onError` 兜底
+            - `runZonedGuarded` 捕获所有异步错误
+            - 所有 init 步骤独立 try-catch，互不影响
+            - 启动期间显示 loading 占位，避免黑屏被系统误判崩溃
+
+            ---
+
             ## 🆕 v3.0.0 重大更新 - 对齐 PiliPlus 架构
 
             ### 🎬 真实视频播放器

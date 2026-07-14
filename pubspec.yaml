@@ -1,7 +1,7 @@
 name: cilicili
 description: CiliCili - 一个第三方哔哩哔哩全平台客户端（参考 PiliPlus 架构）
 publish_to: 'none'
-version: 3.0.0+1
+version: 3.0.1+1
 
 environment:
   sdk: ^3.7.0
@@ -12,6 +12,7 @@ dependencies:
 
   # ===== 网络 =====
   dio: ^5.7.0
+  http: ^1.2.2
   cookie_jar: ^4.0.8
   connectivity_plus: ^6.0.5
 
