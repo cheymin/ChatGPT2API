@@ -24,12 +24,12 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.cheymin.cilicili"
-    compileSdk = 34
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     sourceSets {
@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId = "com.cheymin.cilicili"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         versionCode = flutterVersionCode.toInt()
         versionName = flutterVersionName
     }
