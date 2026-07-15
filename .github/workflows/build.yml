@@ -77,21 +77,20 @@ jobs:
           body: |
             # CiliCili ${{ github.ref_name }}
 
-            ## 🔥 v3.0.1 紧急修复 - 解决启动闪退
+            ## 🔥 v3.0.2 紧急修复 - 解决电视端启动闪退
 
-            ### 修复的闪退原因
-            1. **缺失 http 包**：v3.0.0 移除了 http 依赖，但旧 API 服务仍引用，导致编译/启动失败
-            2. **强制横屏**：部分电视/平板方向传感器异常会直接崩溃，改为允许旋转
-            3. **media_kit 初始化失败无兜底**：libmpv 在某些设备初始化失败会直接退出
-            4. **BiliDio 初始化失败无兜底**：网络异常会退出
-            5. **SharedPreferences 初始化失败无兜底**
-            6. **无全局错误处理**：任何未捕获异常直接闪退
+            ### 修复的闪退原因（电视端致命）
+            1. **ThemeProvider init 返回类型错误**：`ThemeProvider()..init()` 返回 `Future<void>` 而非 `ThemeProvider` 实例，Provider 注册失败导致后续崩溃
+            2. **AndroidManifest 强制横屏**：`android:screenOrientation="sensorLandscape"` 导致部分电视崩溃，已移除
+            3. **桌面端插件不兼容**：`window_manager`/`tray_manager`/`battery_plus`/`wakelock_plus` 在电视上可能 native 崩溃，已移除
+            4. **media_kit 启动时初始化**：`MediaKit.ensureInitialized()` 在 main 中调用可能崩溃，改为延迟初始化（仅播放时才调用）
 
             ### 防御性改造
-            - 全局 `FlutterError.onError` + `PlatformDispatcher.onError` 兜底
-            - `runZonedGuarded` 捕获所有异步错误
-            - 所有 init 步骤独立 try-catch，互不影响
-            - 启动期间显示 loading 占位，避免黑屏被系统误判崩溃
+            - 添加 `ThemeProvider.syncInit()` 同步方法替代异步 init
+            - AndroidManifest 添加电视兼容声明（touchscreen/leanback required=false）
+            - 添加 `android:largeHeap="true"` 解决电视内存不足
+            - PlayerWidget 改为延迟初始化 media_kit，失败显示错误而非崩溃
+            - 移除电视不兼容的桌面端/系统能力插件
 
             ---
 

@@ -41,6 +41,10 @@ class ThemeProvider extends ChangeNotifier {
     _loadFromStorage();
   }
 
+  void syncInit() {
+    _loadFromStorage();
+  }
+
   void _loadFromStorage() {
     // 后续可扩展：从 StorageService 读取持久化设置
   }

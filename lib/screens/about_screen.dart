@@ -10,7 +10,7 @@ class AboutScreen extends StatelessWidget {
 
   static const String projectUrl = 'https://github.com/cheymin/CiliCili';
   static const String author = 'Cheymin';
-  static const String version = '3.0.1';
+  static const String version = '3.0.2';
   static const String appName = 'CiliCili';
   static const String buildDate = '2026-07-13';
 
